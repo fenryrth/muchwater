@@ -86,6 +86,7 @@ Den eneste indbyggede cuvette er den empirisk kalibrerede reference **Ø100 × 1
 - `src/storage/cuvettes.ts` — localStorage-adapter.
 - `src/App.tsx` — nuværende v1-workflow/UI.
 - `src/styles.css` — visuelt system og responsiv styling.
+- `src/vite-env.d.ts` — Vites TypeScript client declarations. Denne fil er nødvendig for typecheck af CSS side-effect imports og `import.meta.env`; slet den ikke uden en tilsvarende typekonfiguration.
 - `public/` — PWA-manifest, ikon og service worker.
 - `ROADMAP.md` — plan for v1–v3.
 - `README.md` — installation og bruger-/udviklerintro.
@@ -125,6 +126,12 @@ Når beregningslogikken ændres:
 7. Opdater `README.md` eller `ROADMAP.md` i samme ændring, hvis brugerflow/roadmap ændres.
 
 Ved ændringer uden for beregningslogikken gælder samme dokumentationsprincip: efterlad ikke `AI.md` eller `ROADMAP.md` med oplysninger, der ikke længere matcher `main`.
+
+### Lokal valideringshistorik
+
+- 2026-08-11: Første brugerprøve på Pop!_OS 24 viste, at appen kørte korrekt i browseren, og alle 5 Vitest-tests bestod.
+- Samme prøve fandt TypeScript-fejl `TS2882` for `./styles.css` og `TS2339` for `import.meta.env`, fordi Vites client declarations manglede.
+- Fix: `src/vite-env.d.ts` med `/// <reference types="vite/client" />` blev tilføjet. Næste lokale validering skal bekræfte `npm run typecheck` og `npm run build` efter `git pull`.
 
 ## 11. V2-designnoter
 
