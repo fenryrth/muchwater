@@ -2,11 +2,11 @@
 
 ## V1 · Beregner
 
-Status: implementeret i første udgave.
+Status: **implementeret i første udgave; afventer første manuelle workshopstest på Pop!_OS.**
 
 - [x] Empirisk reference: 1730 g gips + 750 g vand i Ø100 × 150 mm
-- [x] Cuvettepresets
-- [x] Egne cylindriske cuvetter
+- [x] Kalibreret referencecuvette som indbygget preset
+- [x] Egne cylindriske cuvetter med faktiske indvendige mål
 - [x] Figurvolumen i cm³/ml
 - [x] Reserveprocent
 - [x] Gips-, vand- og totalberegning
@@ -14,6 +14,9 @@ Status: implementeret i første udgave.
 - [x] Responsivt værkstedsinterface
 - [x] PWA/offline-grundlag
 - [x] Unit tests af beregningsmotoren
+- [ ] Første bruger-/workshopstest på Pop!_OS 24
+
+V1-regel: der må ikke tilføjes antagede cuvettestørrelser som standarddata. Kun verificerede værkstedsmål eller den empiriske reference må være presets.
 
 ## V2 · Model og materiale
 
