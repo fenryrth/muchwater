@@ -1,6 +1,6 @@
 # Muchwater
 
-**Muchwater** er et digitalt støbeværktøj til atelieret. Version 1 beregner, hvor meget gips og vand der skal blandes til en cylindrisk cuvette, når figurens faktiske volumen trækkes fra.
+**Muchwater** er et digitalt støbeværktøj til atelieret. Version 1 beregner, hvor meget gips og vand der skal blandes til en cylindrisk cuvette, når figurens volumen trækkes fra.
 
 ## Kalibrering
 
@@ -17,15 +17,19 @@ Ved 0 cm³ figurvolumen og 0 % reserve skal referencecuvetten derfor altid give 
 
 - kalibreret Ø100 × 150 mm referencecuvette som eneste indbyggede preset
 - egne cylindriske cuvetter med faktiske indvendige mål, gemt lokalt i browseren
-- figurvolumen i cm³/ml
+- figurvolumen med fire metoder:
+  - kendt/faktisk volumen i cm³/ml — **mest præcis og anbefalet**
+  - ellipsoide ud fra længde, bredde og højde — estimat
+  - cylinder ud fra diameter og højde — estimat
+  - kasse/blok ud fra længde, bredde og højde — estimat
 - automatisk fratræk af figurens volumen
-- reserve på 0, 3, 5, 10 % eller brugerdefineret
-- resultat for gips, vand, total blanding og fyldevolumen
+- reserve på 0, 3, 5, 10 % eller brugerdefineret 0–100 %
+- resultat for gips, vand, total blanding, figurvolumen og fyldevolumen
 - offline-first PWA-grundlag
 - responsivt interface til PC, tablet og telefon
-- unit tests af beregningskernen
+- unit tests af beregningskernen og de geometriske volumenfunktioner
 
-> Figurens ydermål bruges bevidst ikke som volumen. For en uregelmæssig skulptur vil en bounding box næsten altid overvurdere det fortrængte volumen. I v1 bør faktisk volumen måles, fx med vandfortrængning når figuren/materialet tåler det.
+> **Vigtigt:** De målbaserede figurmetoder er estimater. En uregelmæssig skulptur har typisk mindre faktisk volumen end sin bounding box. Brug kendt eller fysisk målt volumen, når præcision er vigtig. Vandfortrængning kan være en metode, når figuren/materialet tåler det.
 
 Andre cuvettestørrelser er ikke gættet ind i programmet. Opret dem i appen med de faktiske indvendige mål; de gemmes automatisk i browseren på den pågældende enhed.
 
@@ -59,6 +63,8 @@ conda env update -f environment.yml --prune
 conda activate muchwater
 ```
 
+`environment.yml` installerer Node.js 22 via conda-forge.
+
 ### 3. Installer JavaScript-dependencies
 
 ```bash
@@ -91,7 +97,9 @@ http://localhost:5173
 
 ## Første manuelle kontrol
 
-Start med referencecuvetten og sæt:
+### A. Referencekalibreringen
+
+Start med referencecuvetten og vælg `Kendt volumen`:
 
 - Figurvolumen: `0 cm³`
 - Reserve: `0 %`
@@ -102,9 +110,10 @@ Resultatet skal være:
 - **Vand: 750 g**
 - **Total blanding: 2480 g**
 
-Test derefter halv fyldevolumen:
+### B. Halvt fyldevolumen
 
 - Cuvette: Ø100 × 150 mm
+- Figurmetode: `Kendt volumen`
 - Figurvolumen: ca. `589,05 cm³`
 - Reserve: `0 %`
 
@@ -113,7 +122,26 @@ Resultatet skal være ca.:
 - **Gips: 865 g**
 - **Vand: 375 g**
 
-Til sidst bør du oprette én af dine virkelige cuvetter med dens indvendige diameter og højde, genindlæse siden og kontrollere at cuvetten stadig findes. Det validerer den lokale lagring.
+### C. Reserve
+
+- Cuvette: Ø100 × 150 mm
+- Figurvolumen: `0 cm³`
+- Reserve: `5 %`
+
+Resultatet vises afrundet som ca.:
+
+- **Gips: 1817 g**
+- **Vand: 788 g**
+
+### D. Figurens mål
+
+Vælg fx `Ellipsoide`, indtast længde, bredde og højde, og kontrollér at appen viser et **estimeret figurvolumen**. Resultatet for gips og vand skal ændre sig, når målene ændres.
+
+Skift også mellem `Cylinder` og `Kasse / blok` for at kontrollere de forskellige estimeringsmetoder. UI'et skal tydeligt fortælle, at de er estimater.
+
+### E. Din egen cuvette
+
+Opret én af dine virkelige cuvetter med dens **indvendige** diameter og højde. Genindlæs siden og kontrollér, at cuvetten stadig findes. Det validerer den lokale lagring.
 
 ### Produktionspreview
 
@@ -133,10 +161,12 @@ npm run preview
 
 Det faste blandingsforhold ændres altså ikke af skaleringen.
 
+For målbaseret figurinput beregnes først et estimat i cm³, og dette volumen sendes derefter gennem præcis den samme gips-/vandberegning som et kendt volumen.
+
 ## Roadmap
 
 Se [ROADMAP.md](ROADMAP.md). Version 1 er implementeret og afventer første manuelle workshopstest. Version 2 planlægger STL-volumen samt vægt → volumen for voks og resin med redigerbare densiteter. Version 3 udvider mod et egentligt atelier-/batchværktøj.
 
 ## AI-overdragelse
 
-Se [AI.md](AI.md). Den fil er projektets tekniske overdragelsesnotat og skal holdes synkron med projektet, når arkitektur, domæneregler, roadmap eller centrale beslutninger ændres.
+Se [AI.md](AI.md). Den fil er projektets tekniske overdragelsesnotat. Fremtidige AI-agenter skal kontrollere både `AI.md` og `ROADMAP.md` ved kodeændringer og holde dem synkroniseret med projektets faktiske tilstand.
