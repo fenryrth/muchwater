@@ -1,57 +1,89 @@
 # Muchwater
 
-**Muchwater** er et digitalt støbeværktøj til atelieret. Appen beregner, hvor meget gips og vand der skal blandes til en cylindrisk cuvette, når figurens faktiske volumen trækkes fra.
+**Muchwater** er et digitalt støbeværktøj til atelieret. Appen beregner, hvor meget investment/gips og vand der skal blandes til en cylindrisk cuvette, når figurens faktiske volumen trækkes fra.
 
-Aktuel version: **v0.2.0 — første V2-snit**.
+Aktuel version: **v0.2.1 — V2 materialer**.
 
-## Kalibrering
+## Grundkalibrering
 
-Projektets empiriske reference er:
+Projektets empiriske værkstedsreference er:
 
 - Cuvette: Ø100 mm × 150 mm (indvendige mål)
-- Gips: 1730 g
+- Investment/gips: 1730 g
 - Vand: 750 g
 - Geometrisk referencevolumen: ca. 1178,10 cm³
 
-Ved 0 cm³ figurvolumen og 0 % reserve skal referencecuvetten altid give **1730 g gips + 750 g vand**. Dette er en invariant og dækkes af automatiske tests.
+Brugeren har oplyst, at standardproduktet er **Gold Star Powders Metacast**, så denne empiriske reference er nu knyttet til Metacast-preset'et.
 
-## Version 1 — gipsberegner
+Ved 0 cm³ figurvolumen og 0 % reserve skal referencecuvetten altid give:
 
-- kalibreret Ø100 × 150 mm referencecuvette som eneste indbyggede preset
-- egne cylindriske cuvetter med faktiske indvendige mål, gemt lokalt i browseren
-- automatisk fratræk af figurvolumen
+- **1730 g investment/gips**
+- **750 g vand**
+- **2480 g total blanding**
+
+Dette er en invariant og dækkes af automatiske tests.
+
+## Version 2 — materialer
+
+STL-funktionen fra det første V2-snit er fjernet. V2 fokuserer nu på et mere praktisk atelier-workflow:
+
+1. vælg cuvette
+2. vælg investment/gips og resin
+3. angiv figurens volumen direkte eller beregn den fra vægt + resinens densitet
+4. vælg reserve
+5. aflæs investment og vand
+
+### Gold Star Powders Metacast
+
+Verificeret producentdata fra Gold Star Powders:
+
+- Conventional Mixing — vand:pulver **40:100**
+- Vacuum Mixing — vand:pulver **38–40:100**
+
+Officiel produktside:
+`https://www.goldstarpowders.com/products/metacast-premium-investment-powder/`
+
+### Hvorfor bruger Muchwater stadig 1730 / 750?
+
+Din empiriske reference 750 g vand til 1730 g Metacast svarer til ca. **43,35:100**, altså lidt mere vand end Gold Stars datablad angiver.
+
+Muchwater ændrer ikke dette automatisk.
+
+Grunden er, at fabrikantens vand/pulver-ratio alene ikke fortæller præcist, hvor mange gram færdig slurry der skal til for at fylde en bestemt cuvette. Den nuværende 1730/750-reference er derimod en fysisk atelierkalibrering, som allerede er knyttet til et kendt volumen.
+
+Hvis du senere vil arbejde konsekvent efter fx 40:100 eller 38:100, bør vi først lave en ny fysisk referencefyldning og gemme den som en separat Metacast-kalibrering.
+
+## Siraya Tech Cast
+
+V2 har presets for:
+
+- **Siraya Tech Cast True Blue / Royal Blue**
+- **Siraya Tech Cast Purple**
+
+Siraya Techs officielle TDS angiver **Solid Density = 1,2 g/cm³** for begge.
+
+Officiel TDS:
+`https://siraya.tech/pages/cast-castable-resin-tds`
+
+Muchwater bruger 1,2 g/cm³ som startværdi, når volumen beregnes fra vægten af en hærdet resinmodel:
+
+`volumen = vægt / densitet`
+
+Densitetsfeltet kan stadig redigeres, hvis du senere får en bedre værdi for netop din print- og hærdningsproces.
+
+Sirayas separate Cast user guide bruger også et generelt tal på 1,1 g/ml i en beregning af støbemetal fra printvægt. Muchwater vælger TDS'ens eksplicitte **solid density 1,2 g/cm³**, fordi denne funktion beregner volumen fra en fast, hærdet model.
+
+## Version 1-funktioner der fortsat er med
+
+- kalibreret Ø100 × 150 mm referencecuvette
+- egne cylindriske cuvetter med faktiske indvendige mål
+- lokal lagring af egne cuvetter
+- figurvolumen i cm³/ml
+- automatisk fratræk af figurens volumen
 - reserve på 0, 3, 5, 10 % eller brugerdefineret
-- resultat for gips, vand, total blanding og fyldevolumen
+- resultat for investment, vand, total blanding og fyldevolumen
 - offline-first PWA-grundlag
 - responsivt interface til PC, tablet og telefon
-
-## Version 2 — første implementering
-
-Figurens volumen kan nu leveres på tre måder:
-
-1. **Volumen** — skriv faktisk volumen direkte i cm³/ml.
-2. **Vægt** — skriv figurens vægt og densitet i g/cm³; appen beregner `masse / densitet`.
-3. **STL** — vælg en ASCII- eller binær STL-fil; appen analyserer den lokalt i browseren og beregner volumen.
-
-STL-flowet viser også:
-
-- modellens dimensioner
-- trekantantal
-- ASCII/binært format
-- om mesh-kanttopologien ser lukket/watertight ud
-- antal åbne og non-manifold kanter ved fejl
-
-### Vigtigt om STL-enheder
-
-STL-formatet gemmer ikke en standardiseret fysisk enhed. Muchwater kan derfor ikke vide, om filens tal betyder mm, cm, inch eller meter. Vælg den samme enhed, som modellen blev eksporteret med. Standardvalget i appen er mm, men det er et brugerinput — ikke metadata læst fra filen.
-
-### Vigtigt om densitet
-
-Densitet varierer mellem forskellige vokse, resiner og andre materialer. Muchwater gætter derfor ikke en universel densitet. Brug producentens datablad eller din egen målte/kalibrerede værdi.
-
-### Aktuel V2-begrænsning
-
-Første STL-version kontrollerer mesh-kanterne for åben/non-manifold geometri, men eksplicit validering af forkert face winding/orientering er stadig planlagt. Indtil den kontrol er implementeret, bør du sammenligne de første virkelige STL-resultater med volumen fra den 3D-software, modellen eksporteres fra.
 
 ## Installation på Pop!_OS 24 med Conda
 
@@ -73,11 +105,7 @@ conda activate muchwater
 git pull
 ```
 
-Hvis `environment.yml` senere ændres, kan miljøet synkroniseres med:
-
-```bash
-conda env update -f environment.yml --prune
-```
+Der er ikke tilføjet nye npm-dependencies i v0.2.1, men `npm install` er ufarligt at køre igen, hvis du vil sikre at miljøet er synkroniseret.
 
 ## Automatiske kontroller
 
@@ -89,7 +117,13 @@ npm run typecheck
 npm run build
 ```
 
-Alle tre kommandoer skal afslutte uden fejl. I v0.2.0 er der **12 unit tests** fordelt på gipsberegning, vægt/densitet og STL-analyse.
+Alle tre kommandoer skal afslutte uden fejl.
+
+I v0.2.1 forventes **11 tests fordelt på 3 testfiler**:
+
+- gips-/investmentberegning
+- vægt/densitet
+- verificerede materialepresets
 
 ## Start appen
 
@@ -105,61 +139,86 @@ http://localhost:5173
 
 Åbn adressen i browseren. Stop serveren igen med `Ctrl+C`.
 
-## Manuel test — V1-regression
+## Manuel test 1 — referenceblanding
 
 Vælg:
 
 - Cuvette: Ø100 × 150 mm
+- Investment: Gold Star Powders · Metacast
 - Figurvolumen: `0 cm³`
 - Reserve: `0 %`
 
 Forventet resultat:
 
-- **Gips: 1730 g**
+- **Investment: 1730 g**
 - **Vand: 750 g**
 - **Total blanding: 2480 g**
 
-Test derefter ca. halv fyldevolumen:
+## Manuel test 2 — Siraya Tech vægt → volumen
 
-- Cuvette: Ø100 × 150 mm
-- Figurvolumen: ca. `589,05 cm³`
-- Reserve: `0 %`
+Vælg en af Siraya Tech Cast-varianterne og gå til:
 
-Forventet resultat ca.:
+**Figurens volumen → Vægt**
 
-- **Gips: 865 g**
-- **Vand: 375 g**
+Preset-densiteten skal være:
 
-## Manuel test — V2 vægt
+```text
+1,2 g/cm³
+```
 
-Under **Figurens volumen → Vægt** kan du teste matematikken med:
+Test med:
 
-- Vægt: `184 g`
-- Densitet: `0,92 g/cm³`
+```text
+Vægt: 240 g
+Densitet: 1,2 g/cm³
+```
 
 Den beregnede volumen skal være:
 
-- **200,00 cm³**
+```text
+200,00 cm³
+```
 
-Tryk **Brug volumen** og kontrollér, at aktivt figurvolumen bliver 200 cm³ og blandingsresultatet ændrer sig.
+Tryk **Brug volumen** og kontrollér, at aktivt figurvolumen bliver 200 cm³ og blandingsresultatet ændres.
 
-Denne densitet er kun et testtal til at kontrollere divisionen; den skal ikke opfattes som en universel voksdensitet.
+## Manuel test 3 — materialepanelet
 
-## Manuel test — V2 STL
+Kontrollér at appen viser:
 
-Brug helst en lukket STL-model, hvor du allerede kan se volumen i din 3D-software.
+**Metacast**
 
-1. Gå til **Figurens volumen → STL**.
-2. Vælg STL-filen.
-3. Vælg den enhed, filen blev eksporteret i, typisk mm hvis det er dit workflow.
-4. Kontrollér at dimensionerne i Muchwater svarer til modellens kendte dimensioner.
-5. Kontrollér at status er **Watertight**.
-6. Sammenlign Muchwaters cm³-volumen med volumen fra din 3D-software.
-7. Tryk **Brug STL-volumen** og kontrollér at blandingsberegningen opdateres.
+- atelierkalibrering: 1730 g / 750 g
+- atelier vand:pulver: ca. 43,35:100
+- producent konventionel: 40:100
+- producent vakuum: 38–40:100
 
-Hvis dimensionerne er fx 10× eller 25,4× forkerte, er STL-enheden sandsynligvis valgt forkert.
+**Siraya Tech Cast**
 
-Hvis Muchwater markerer modellen som åben, bruges STL-volumen ikke automatisk. Reparér/forsegl mesh'et i din 3D-software og eksportér igen.
+- solid densitet: 1,2 g/cm³
+
+Kontrollér også at der **ikke længere findes en STL-fane eller STL-upload**.
+
+## Beregningsprincip
+
+1. Cuvettevolumen beregnes som en cylinder: `π × r² × h`.
+2. Figurens faktiske volumen kommer fra manuel input eller vægt/densitet.
+3. Figurens volumen trækkes fra cuvettevolumen.
+4. Det resterende fyldevolumen sammenlignes med den valgte investments empiriske referencevolumen.
+5. Kalibrerede gram investment og vand skaleres med samme faktor.
+6. Eventuel reserve lægges på til sidst.
+
+## Nye investment-typer
+
+Beregningsmotoren understøtter nu materialespecifikke kalibreringer, men Metacast er foreløbig den eneste investment, der har en verificeret fysisk reference.
+
+En ny investment bør derfor ikke bare få fabrikantens blandingsratio indtastet og derefter bruges til automatisk gram-beregning. Det professionelle workflow bliver i stedet:
+
+1. vælg en referencecuvette
+2. bland den ønskede investment
+3. registrér de faktiske gram pulver og vand, der fylder referencecuvetten
+4. gem dette som materialets empiriske kalibrering
+
+Det er planlagt som næste V2-snit.
 
 ## Produktionspreview
 
@@ -169,21 +228,10 @@ Efter `npm run build` kan den byggede version testes med:
 npm run preview
 ```
 
-## Beregningsprincip
-
-1. Cuvettevolumen beregnes som en cylinder: `π × r² × h`.
-2. Figurens faktiske volumen kommer fra manuel input, vægt/densitet eller STL.
-3. Figurens volumen trækkes fra cuvettevolumen.
-4. Det resterende fyldevolumen sammenlignes med referencevolumen Ø100 × 150 mm.
-5. Både 1730 g gips og 750 g vand skaleres med samme faktor.
-6. Eventuel reserve lægges på til sidst.
-
-Det faste blandingsforhold ændres ikke af skaleringen.
-
 ## Roadmap
 
-Se [ROADMAP.md](ROADMAP.md) for implementeret og planlagt funktionalitet. Næste V2-snit fokuserer på stærkere STL-validering, gemte materialer/densiteter og gemte figurer/modeller. Version 3 udvider mod batchhistorik og et bredere atelier-workflow.
+Se [ROADMAP.md](ROADMAP.md). Næste V2-snit fokuserer på egne gemte resinmaterialer, egne investment-kalibreringer og et guidet kalibreringsflow.
 
 ## AI-overdragelse
 
-Se [AI.md](AI.md). Filen er projektets tekniske overdragelsesnotat og skal holdes synkron med projektet, når arkitektur, domæneregler, roadmap eller centrale beslutninger ændres.
+Se [AI.md](AI.md). Filen er projektets tekniske overdragelsesnotat og skal holdes synkron med projektet, når arkitektur, domæneregler, materialedata, roadmap eller centrale beslutninger ændres.
