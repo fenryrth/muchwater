@@ -1,0 +1,44 @@
+.figure-volume-panel { display: grid; gap: 16px; }
+
+.method-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.method-tab { border: 1px solid #4b514b; border-radius: 9px; background: #242824; color: #d8ddd8; padding: 10px 12px; }
+.method-tab:hover { border-color: #747c74; }
+.method-tab.active { background: var(--accent); border-color: var(--accent); color: #171510; font-weight: 800; }
+.method-panel { padding: 15px; border: 1px solid #3a403a; border-radius: 12px; background: #121412; }
+.method-panel > label { display: block; margin: 14px 0 7px; color: #c8cec8; font-size: .8rem; font-weight: 700; letter-spacing: .03em; }
+.method-panel .two-column label { display: block; margin: 0 0 7px; color: #c8cec8; font-size: .8rem; font-weight: 700; letter-spacing: .03em; }
+.warning-note { padding-left: 12px; border-left: 2px solid var(--accent); }
+
+.candidate-card, .stl-card, .active-volume { border: 1px solid #3a403a; border-radius: 12px; background: var(--panel-soft); }
+.candidate-card { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-top: 14px; padding: 14px; }
+.candidate-card span, .candidate-card small, .active-volume span { display: block; color: var(--muted); font-size: .72rem; }
+.candidate-card strong { display: block; margin-top: 4px; font-size: 1.2rem; }
+.candidate-card small { margin-top: 3px; }
+
+.file-input { padding: 8px; }
+.file-input::file-selector-button { border: 1px solid #4b514b; border-radius: 7px; background: #242824; color: #f2efe6; padding: 8px 10px; margin-right: 10px; cursor: pointer; }
+.inline-error { margin: 12px 0 0; color: #e6b4ae; font-size: .82rem; line-height: 1.45; }
+
+.stl-card { margin-top: 14px; padding: 14px; }
+.stl-card.valid { border-color: rgba(169, 200, 196, .45); }
+.stl-card.invalid { border-color: rgba(225, 162, 155, .45); }
+.stl-status-row { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.stl-status-row span, .stl-status-row strong { display: block; }
+.stl-status-row > div > span { color: var(--muted); font-size: .72rem; word-break: break-word; }
+.stl-status-row > div > strong { margin-top: 4px; }
+.status-pill { flex: 0 0 auto; padding: 5px 8px; border: 1px solid #4b514b; border-radius: 999px; color: #cfd5cf; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; }
+.stl-details { margin: 14px 0 0; border-top: 1px solid #343a35; }
+.stl-details div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #2a2e2a; }
+.stl-details dt { color: var(--muted); }
+.stl-details dd { margin: 0; text-align: right; font-weight: 700; }
+.primary-button:disabled { opacity: .45; cursor: not-allowed; }
+
+.active-volume { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 14px; }
+.active-volume strong { color: var(--accent-strong); }
+
+@media (max-width: 540px) {
+  .method-tabs { grid-template-columns: 1fr; }
+  .candidate-card, .active-volume, .stl-status-row { align-items: stretch; flex-direction: column; }
+  .stl-details div { flex-direction: column; gap: 4px; }
+  .stl-details dd { text-align: left; }
+}
