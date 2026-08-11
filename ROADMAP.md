@@ -2,7 +2,7 @@
 
 ## V1 · Beregner
 
-Status: **implementeret i første udgave; afventer første manuelle workshopstest på Pop!_OS.**
+Status: **implementeret i første udgave og manuelt prøvet på Pop!_OS 24; afventer genkørsel af typecheck/build efter Vite type-fix.**
 
 - [x] Empirisk reference: 1730 g gips + 750 g vand i Ø100 × 150 mm
 - [x] Kalibreret referencecuvette som indbygget preset
@@ -14,7 +14,9 @@ Status: **implementeret i første udgave; afventer første manuelle workshopstes
 - [x] Responsivt værkstedsinterface
 - [x] PWA/offline-grundlag
 - [x] Unit tests af beregningsmotoren
-- [ ] Første bruger-/workshopstest på Pop!_OS 24
+- [x] Første bruger-/workshopstest på Pop!_OS 24: appen kører, 5/5 tests består
+- [x] Fix for manglende Vite TypeScript client declarations
+- [ ] Bekræft lokalt at `npm run typecheck` og `npm run build` består efter `git pull`
 
 V1-regel: der må ikke tilføjes antagede cuvettestørrelser som standarddata. Kun verificerede værkstedsmål eller den empiriske reference må være presets.
 
