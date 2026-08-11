@@ -7,14 +7,34 @@ export const CALIBRATION = Object.freeze({
   waterGrams: 750,
 });
 
+function hasValidDimensions(...values: number[]): boolean {
+  return values.every((value) => Number.isFinite(value) && value > 0);
+}
+
 export function cylinderVolumeCm3(diameterMm: number, heightMm: number): number {
-  if (!Number.isFinite(diameterMm) || !Number.isFinite(heightMm) || diameterMm <= 0 || heightMm <= 0) {
+  if (!hasValidDimensions(diameterMm, heightMm)) {
     return 0;
   }
 
   const radiusCm = diameterMm / 20;
   const heightCm = heightMm / 10;
   return Math.PI * radiusCm ** 2 * heightCm;
+}
+
+export function boxVolumeCm3(lengthMm: number, widthMm: number, heightMm: number): number {
+  if (!hasValidDimensions(lengthMm, widthMm, heightMm)) {
+    return 0;
+  }
+
+  return (lengthMm * widthMm * heightMm) / 1000;
+}
+
+export function ellipsoidVolumeCm3(lengthMm: number, widthMm: number, heightMm: number): number {
+  if (!hasValidDimensions(lengthMm, widthMm, heightMm)) {
+    return 0;
+  }
+
+  return (Math.PI / 6) * lengthMm * widthMm * heightMm / 1000;
 }
 
 export const CALIBRATION_VOLUME_CM3 = cylinderVolumeCm3(
@@ -28,13 +48,22 @@ export function cuvetteVolumeCm3(cuvette: Cuvette): number {
 
 export function calculateMix(input: MixInput): MixResult {
   const cuvetteVolume = cuvetteVolumeCm3(input.cuvette);
-  const figureVolume = Math.max(0, input.figureVolumeCm3);
-  const reservePercent = Math.max(0, input.reservePercent);
-  const fillVolume = cuvetteVolume - figureVolume;
+  const figureVolume = input.figureVolumeCm3;
+  const reservePercent = input.reservePercent;
 
   if (cuvetteVolume <= 0) {
     throw new Error('Cuvetten skal have en diameter og højde større end 0.');
   }
+
+  if (!Number.isFinite(figureVolume) || figureVolume < 0) {
+    throw new Error('Figurens volumen skal være 0 eller større.');
+  }
+
+  if (!Number.isFinite(reservePercent) || reservePercent < 0 || reservePercent > 100) {
+    throw new Error('Reserve skal være mellem 0 og 100 %.');
+  }
+
+  const fillVolume = cuvetteVolume - figureVolume;
 
   if (fillVolume <= 0) {
     throw new Error('Figurens volumen skal være mindre end cuvettens volumen.');
