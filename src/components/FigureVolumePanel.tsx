@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { volumeFromMassAndDensity } from '../domain/figure';
 import { analyzeStl } from '../domain/stl';
 import type { StlUnit } from '../domain/stl';
+import './FigureVolumePanel.css';
 
 interface FigureVolumePanelProps {
   volumeCm3: number;
