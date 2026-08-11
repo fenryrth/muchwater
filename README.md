@@ -15,37 +15,111 @@ Ved 0 cm³ figurvolumen og 0 % reserve skal referencecuvetten derfor altid give 
 
 ## Version 1
 
-- cylindriske cuvetter
-- faste presets + egne cuvetter gemt lokalt i browseren
+- kalibreret Ø100 × 150 mm referencecuvette som eneste indbyggede preset
+- egne cylindriske cuvetter med faktiske indvendige mål, gemt lokalt i browseren
 - figurvolumen i cm³/ml
 - automatisk fratræk af figurens volumen
 - reserve på 0, 3, 5, 10 % eller brugerdefineret
 - resultat for gips, vand, total blanding og fyldevolumen
-- offline-first PWA
+- offline-first PWA-grundlag
 - responsivt interface til PC, tablet og telefon
-- testet beregningskerne
+- unit tests af beregningskernen
 
-> Figurens ydermål bruges bevidst ikke som volumen. For en uregelmæssig skulptur vil en bounding box næsten altid overvurdere det fortrængte volumen. I v1 bør faktisk volumen måles, fx med vandfortrængning.
+> Figurens ydermål bruges bevidst ikke som volumen. For en uregelmæssig skulptur vil en bounding box næsten altid overvurdere det fortrængte volumen. I v1 bør faktisk volumen måles, fx med vandfortrængning når figuren/materialet tåler det.
 
-## Installation på Pop!_OS med Conda
+Andre cuvettestørrelser er ikke gættet ind i programmet. Opret dem i appen med de faktiske indvendige mål; de gemmes automatisk i browseren på den pågældende enhed.
+
+## Installation på Pop!_OS 24 med Conda
+
+### 1. Klon projektet
 
 ```bash
 git clone https://github.com/fenryrth/muchwater.git
 cd muchwater
-conda env create -f environment.yml
-conda activate muchwater
-npm install
-npm run dev
 ```
 
-Vite viser den lokale adresse i terminalen, normalt `http://localhost:5173`.
+Hvis du allerede har klonet projektet tidligere, så brug i stedet:
 
-### Test og produktionsbuild
+```bash
+cd muchwater
+git pull
+```
+
+### 2. Opret Conda-miljøet
+
+```bash
+conda env create -f environment.yml
+conda activate muchwater
+```
+
+Hvis miljøet allerede findes efter en senere opdatering:
+
+```bash
+conda env update -f environment.yml --prune
+conda activate muchwater
+```
+
+### 3. Installer JavaScript-dependencies
+
+```bash
+npm install
+```
+
+### 4. Kør de automatiske kontroller
 
 ```bash
 npm test
 npm run typecheck
 npm run build
+```
+
+Alle tre kommandoer skal afslutte uden fejl.
+
+### 5. Start udviklingsversionen
+
+```bash
+npm run dev
+```
+
+Vite viser en lokal adresse i terminalen, normalt:
+
+```text
+http://localhost:5173
+```
+
+Åbn adressen i din browser. Stop serveren igen med `Ctrl+C` i terminalen.
+
+## Første manuelle kontrol
+
+Start med referencecuvetten og sæt:
+
+- Figurvolumen: `0 cm³`
+- Reserve: `0 %`
+
+Resultatet skal være:
+
+- **Gips: 1730 g**
+- **Vand: 750 g**
+- **Total blanding: 2480 g**
+
+Test derefter halv fyldevolumen:
+
+- Cuvette: Ø100 × 150 mm
+- Figurvolumen: ca. `589,05 cm³`
+- Reserve: `0 %`
+
+Resultatet skal være ca.:
+
+- **Gips: 865 g**
+- **Vand: 375 g**
+
+Til sidst bør du oprette én af dine virkelige cuvetter med dens indvendige diameter og højde, genindlæse siden og kontrollere at cuvetten stadig findes. Det validerer den lokale lagring.
+
+### Produktionspreview
+
+Efter `npm run build` kan den byggede version testes med:
+
+```bash
 npm run preview
 ```
 
@@ -61,8 +135,8 @@ Det faste blandingsforhold ændres altså ikke af skaleringen.
 
 ## Roadmap
 
-Se [ROADMAP.md](ROADMAP.md). Version 2 planlægger STL-volumen samt vægt → volumen for voks og resin med redigerbare densiteter. Version 3 udvider mod et egentligt atelier-/batchværktøj.
+Se [ROADMAP.md](ROADMAP.md). Version 1 er implementeret og afventer første manuelle workshopstest. Version 2 planlægger STL-volumen samt vægt → volumen for voks og resin med redigerbare densiteter. Version 3 udvider mod et egentligt atelier-/batchværktøj.
 
 ## AI-overdragelse
 
-Se [AI.md](AI.md). Den fil er projektets tekniske overdragelsesnotat og skal opdateres, når arkitektur, domæneregler, roadmap eller centrale beslutninger ændres.
+Se [AI.md](AI.md). Den fil er projektets tekniske overdragelsesnotat og skal holdes synkron med projektet, når arkitektur, domæneregler, roadmap eller centrale beslutninger ændres.
