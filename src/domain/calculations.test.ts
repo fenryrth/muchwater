@@ -54,6 +54,23 @@ describe('calculateMix', () => {
     expect(result.waterGrams).toBeCloseTo(787.5, 8);
   });
 
+  it('can use a material-specific empirical calibration', () => {
+    const result = calculateMix({
+      cuvette: referenceCuvette,
+      figureVolumeCm3: 0,
+      reservePercent: 0,
+      calibration: {
+        diameterMm: 100,
+        heightMm: 150,
+        plasterGrams: 1000,
+        waterGrams: 400,
+      },
+    });
+
+    expect(result.plasterGrams).toBeCloseTo(1000, 8);
+    expect(result.waterGrams).toBeCloseTo(400, 8);
+  });
+
   it('rejects a figure that fills or exceeds the cuvette', () => {
     expect(() =>
       calculateMix({
