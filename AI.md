@@ -1,6 +1,6 @@
 # AI.md — Muchwater handover
 
-Denne fil er skrevet til en ny AI eller udvikler, der skal kunne forstå projektet hurtigt og fortsætte uden at genopfinde centrale beslutninger. **Opdater filen, når domæneregler, arkitektur, roadmap, kalibrering eller centrale workflows ændres.**
+Denne fil er skrevet til en ny AI eller udvikler, der skal kunne forstå projektet hurtigt og fortsætte uden at genopfinde centrale beslutninger. **Opdater filen i samme ændring/commit, når domæneregler, arkitektur, roadmap, kalibrering, centrale workflows eller andre oplysninger her bliver forældede.**
 
 ## 1. Projektets formål
 
@@ -71,12 +71,18 @@ V1 er bevidst **frontend-only, local-first og offline-first**:
 
 Begrundelse: beregningen behøver ingen server, og værkstedsværktøjet skal være hurtigt, robust og fungere offline. Tilføj ikke backend før et konkret krav (fx synkronisering/backup på tværs af enheder) retfærdiggør kompleksiteten.
 
-## 6. Filstruktur
+## 6. Cuvetter og værkstedsdata
+
+Den eneste indbyggede cuvette er den empirisk kalibrerede reference **Ø100 × 150 mm**.
+
+**Opfind ikke andre standardstørrelser på brugerens vegne.** Andre cuvetter er værkstedsdata og skal oprettes af brugeren med faktiske indvendige mål og gemmes via localStorage. Hvis brugeren senere giver en verificeret fast liste over egne cuvetter, kan de tilføjes som eksplicitte presets.
+
+## 7. Filstruktur
 
 - `src/domain/calculations.ts` — domæneformler og kalibreringskonstanter. Hold denne fil UI-uafhængig.
 - `src/domain/calculations.test.ts` — regressionstests for de fysiske/beregningsmæssige regler.
 - `src/domain/types.ts` — domænetyper.
-- `src/data/cuvettes.ts` — indbyggede cuvettepresets.
+- `src/data/cuvettes.ts` — kun verificerede indbyggede cuvettepresets; aktuelt kun referencecuvetten.
 - `src/storage/cuvettes.ts` — localStorage-adapter.
 - `src/App.tsx` — nuværende v1-workflow/UI.
 - `src/styles.css` — visuelt system og responsiv styling.
@@ -84,7 +90,7 @@ Begrundelse: beregningen behøver ingen server, og værkstedsværktøjet skal v�
 - `ROADMAP.md` — plan for v1–v3.
 - `README.md` — installation og bruger-/udviklerintro.
 
-## 7. UI-principper
+## 8. UI-principper
 
 Dette er et atelierinstrument, ikke et generisk admin-dashboard.
 
@@ -98,7 +104,7 @@ Dette er et atelierinstrument, ikke et generisk admin-dashboard.
 
 Den nuværende visuelle retning er mørk, varm og materialebåret (kul/sort, gips/off-white, messing/oker, afdæmpet vandtone). Bevar retningen medmindre brugeren ønsker en anden identitet.
 
-## 8. Data og migration
+## 9. Data og migration
 
 Custom cuvettes ligger under localStorage-nøglen:
 
@@ -106,7 +112,7 @@ Custom cuvettes ligger under localStorage-nøglen:
 
 Hvis datastrukturen ændres, bump versionssuffixet eller implementer eksplicit migration. Undgå at ændre eksisterende lagrede data tavst.
 
-## 9. Definition of done for ændringer
+## 10. Definition of done for ændringer
 
 Når beregningslogikken ændres:
 
@@ -115,10 +121,12 @@ Når beregningslogikken ændres:
 3. Kør `npm test`.
 4. Kør `npm run typecheck`.
 5. Kør `npm run build`.
-6. Opdater `AI.md` hvis beslutningen påvirker overdragelse/arkitektur/domæne.
-7. Opdater `README.md` eller `ROADMAP.md` hvis brugerflow/roadmap ændres.
+6. Opdater `AI.md` i samme ændring, hvis beslutningen påvirker overdragelse/arkitektur/domæne.
+7. Opdater `README.md` eller `ROADMAP.md` i samme ændring, hvis brugerflow/roadmap ændres.
 
-## 10. V2-designnoter
+Ved ændringer uden for beregningslogikken gælder samme dokumentationsprincip: efterlad ikke `AI.md` eller `ROADMAP.md` med oplysninger, der ikke længere matcher `main`.
+
+## 11. V2-designnoter
 
 STL:
 
@@ -134,10 +142,10 @@ Vægt/materiale:
 - gem evt. brugerens kalibrerede densitet lokalt
 - undgå at præsentere generiske voks-/resinværdier som præcise fabriksdata
 
-## 11. Fremtidig kalibrering
+## 12. Fremtidig kalibrering
 
 V3 kan bruge batchhistorik til at estimere systematisk over-/underforbrug. Dette må ikke automatisk overskrive grundkalibreringen uden brugerens tydelige handling. Bevar rå værkstedsreference og eventuelle personlige korrektioner som separate begreber.
 
-## 12. Sprog og navngivning
+## 13. Sprog og navngivning
 
 Brugerfladen er dansk. Kode, typer, funktionsnavne og commits kan være engelsk. `Muchwater` er projektnavnet/reponavnet.
