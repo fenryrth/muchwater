@@ -1,6 +1,6 @@
-import type { Cuvette, MixInput, MixResult } from './types';
+import type { Cuvette, MixCalibration, MixInput, MixResult } from './types';
 
-export const CALIBRATION = Object.freeze({
+export const CALIBRATION: MixCalibration = Object.freeze({
   diameterMm: 100,
   heightMm: 150,
   plasterGrams: 1730,
@@ -27,10 +27,16 @@ export function cuvetteVolumeCm3(cuvette: Cuvette): number {
 }
 
 export function calculateMix(input: MixInput): MixResult {
+  const calibration = input.calibration ?? CALIBRATION;
+  const calibrationVolume = cylinderVolumeCm3(calibration.diameterMm, calibration.heightMm);
   const cuvetteVolume = cuvetteVolumeCm3(input.cuvette);
   const figureVolume = Math.max(0, input.figureVolumeCm3);
   const reservePercent = Math.max(0, input.reservePercent);
   const fillVolume = cuvetteVolume - figureVolume;
+
+  if (calibrationVolume <= 0 || calibration.plasterGrams <= 0 || calibration.waterGrams <= 0) {
+    throw new Error('Materialets kalibrering er ugyldig.');
+  }
 
   if (cuvetteVolume <= 0) {
     throw new Error('Cuvetten skal have en diameter og højde større end 0.');
@@ -40,10 +46,10 @@ export function calculateMix(input: MixInput): MixResult {
     throw new Error('Figurens volumen skal være mindre end cuvettens volumen.');
   }
 
-  const scale = fillVolume / CALIBRATION_VOLUME_CM3;
+  const scale = fillVolume / calibrationVolume;
   const reserveFactor = 1 + reservePercent / 100;
-  const plasterGrams = CALIBRATION.plasterGrams * scale * reserveFactor;
-  const waterGrams = CALIBRATION.waterGrams * scale * reserveFactor;
+  const plasterGrams = calibration.plasterGrams * scale * reserveFactor;
+  const waterGrams = calibration.waterGrams * scale * reserveFactor;
 
   return {
     cuvetteVolumeCm3: cuvetteVolume,
