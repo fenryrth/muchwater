@@ -89,8 +89,14 @@ describe('analyzeStl', () => {
     expect(result.dimensionsMm).toEqual({ x: 100, y: 100, z: 100 });
   });
 
-  it('flags an open mesh as not watertight', () => {
-    const openMesh = tetrahedronAscii.replace(/facet normal 1 1 1[\s\S]*?endfacet\n/, '');
-    expect(() => analyzeStl(asciiBuffer(openMesh), 'mm')).toThrow(/for få trekanter/i);
+  it('flags a cracked mesh as not watertight', () => {
+    const crackedMesh = tetrahedronAscii.replace(
+      'vertex 10 0 0\n    vertex 0 10 0\n    vertex 0 0 10\n  endloop\nendfacet\nendsolid',
+      'vertex 10 0 0\n    vertex 0 10 0\n    vertex 0 0 11\n  endloop\nendfacet\nendsolid',
+    );
+    const result = analyzeStl(asciiBuffer(crackedMesh), 'mm');
+
+    expect(result.watertight).toBe(false);
+    expect(result.boundaryEdgeCount).toBeGreaterThan(0);
   });
 });
