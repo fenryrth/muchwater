@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { FigureVolumePanel } from './components/FigureVolumePanel';
 import {
   CALIBRATION,
   CALIBRATION_VOLUME_CM3,
@@ -84,7 +85,7 @@ function App() {
     <main className="app-shell">
       <header className="masthead">
         <div>
-          <p className="eyebrow">Digitalt støbeværktøj · v0.1</p>
+          <p className="eyebrow">Digitalt støbeværktøj · v0.2</p>
           <h1>Muchwater</h1>
           <p className="subtitle">Gipsberegner til atelieret</p>
         </div>
@@ -156,29 +157,11 @@ function App() {
               <span className="step-number">02</span>
               <div>
                 <h2>Figurens volumen</h2>
-                <p>Det volumen figuren optager inde i cuvetten.</p>
+                <p>Indtast volumen direkte, beregn fra vægt eller analysér en STL-fil.</p>
               </div>
             </div>
 
-            <label className="field-label" htmlFor="figure-volume">Volumen · cm³ / ml</label>
-            <div className="unit-input">
-              <input
-                id="figure-volume"
-                type="number"
-                min="0"
-                step="1"
-                value={figureVolume}
-                onChange={(event) => setFigureVolume(numberFromInput(event.target.value))}
-              />
-              <span>cm³</span>
-            </div>
-            <p className="field-note">
-              Til en uregelmæssig fysisk figur kan volumen måles med vandfortrængning. Ydermål alene er ikke præcise nok.
-            </p>
-            <div className="future-note">
-              <span>V2</span>
-              STL samt vægt → volumen for voks og resin er planlagt og får egne materialedensiteter.
-            </div>
+            <FigureVolumePanel volumeCm3={figureVolume} onVolumeChange={setFigureVolume} />
           </div>
 
           <div className="step-card">
@@ -253,8 +236,8 @@ function App() {
       </section>
 
       <footer>
-        <span>Muchwater v0.1 · atelier calculator</span>
-        <span>Beregningen er empirisk kalibreret – ikke baseret på teoretisk densitet.</span>
+        <span>Muchwater v0.2 · atelier calculator</span>
+        <span>Beregningen er empirisk kalibreret – ikke baseret på teoretisk gipsdensitet.</span>
       </footer>
     </main>
   );
