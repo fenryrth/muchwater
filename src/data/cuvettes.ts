@@ -1,8 +1,7 @@
 import type { Cuvette } from '../domain/types';
 
+// Only the empirically calibrated workshop reference is built in.
+// Do not add assumed workshop sizes here; user-specific cuvettes belong in localStorage.
 export const DEFAULT_CUVETTES: Cuvette[] = [
-  { id: '100x150', name: 'Ø100 × 150 mm', diameterMm: 100, heightMm: 150 },
-  { id: '120x180', name: 'Ø120 × 180 mm', diameterMm: 120, heightMm: 180 },
-  { id: '150x200', name: 'Ø150 × 200 mm', diameterMm: 150, heightMm: 200 },
-  { id: '200x250', name: 'Ø200 × 250 mm', diameterMm: 200, heightMm: 250 },
+  { id: '100x150', name: 'Reference · Ø100 × 150 mm', diameterMm: 100, heightMm: 150 },
 ];
