@@ -1,15 +1,21 @@
 import { useMemo, useState } from 'react';
 import { FigureVolumePanel } from './components/FigureVolumePanel';
+import { MaterialPanel } from './components/MaterialPanel';
 import {
-  CALIBRATION,
-  CALIBRATION_VOLUME_CM3,
   calculateMix,
   cuvetteVolumeCm3,
+  cylinderVolumeCm3,
   formatLitres,
   roundGrams,
 } from './domain/calculations';
 import type { Cuvette } from './domain/types';
 import { DEFAULT_CUVETTES } from './data/cuvettes';
+import {
+  DEFAULT_INVESTMENT_ID,
+  DEFAULT_RESIN_ID,
+  INVESTMENT_MATERIALS,
+  RESIN_MATERIALS,
+} from './data/materials';
 import { loadCustomCuvettes, saveCustomCuvettes } from './storage/cuvettes';
 
 const RESERVE_PRESETS = [0, 3, 5, 10];
@@ -23,6 +29,8 @@ function numberFromInput(value: string): number {
 function App() {
   const [customCuvettes, setCustomCuvettes] = useState<Cuvette[]>(() => loadCustomCuvettes());
   const [selectedId, setSelectedId] = useState(DEFAULT_CUVETTES[0].id);
+  const [selectedInvestmentId, setSelectedInvestmentId] = useState(DEFAULT_INVESTMENT_ID);
+  const [selectedResinId, setSelectedResinId] = useState(DEFAULT_RESIN_ID);
   const [figureVolume, setFigureVolume] = useState(0);
   const [reservePercent, setReservePercent] = useState(5);
   const [showCustomForm, setShowCustomForm] = useState(false);
@@ -32,7 +40,13 @@ function App() {
 
   const cuvettes = useMemo(() => [...DEFAULT_CUVETTES, ...customCuvettes], [customCuvettes]);
   const selectedCuvette = cuvettes.find((item) => item.id === selectedId) ?? cuvettes[0];
+  const selectedInvestment = INVESTMENT_MATERIALS.find((item) => item.id === selectedInvestmentId) ?? INVESTMENT_MATERIALS[0];
+  const selectedResin = RESIN_MATERIALS.find((item) => item.id === selectedResinId) ?? RESIN_MATERIALS[0];
   const selectedVolume = cuvetteVolumeCm3(selectedCuvette);
+  const calibrationVolume = cylinderVolumeCm3(
+    selectedInvestment.calibration.diameterMm,
+    selectedInvestment.calibration.heightMm,
+  );
 
   const result = useMemo(() => {
     try {
@@ -41,6 +55,7 @@ function App() {
           cuvette: selectedCuvette,
           figureVolumeCm3: figureVolume,
           reservePercent,
+          calibration: selectedInvestment.calibration,
         }),
         error: '',
       };
@@ -50,7 +65,7 @@ function App() {
         error: error instanceof Error ? error.message : 'Beregningen kunne ikke udføres.',
       };
     }
-  }, [selectedCuvette, figureVolume, reservePercent]);
+  }, [selectedCuvette, selectedInvestment, figureVolume, reservePercent]);
 
   function addCustomCuvette() {
     if (customDiameter <= 0 || customHeight <= 0) return;
@@ -85,14 +100,14 @@ function App() {
     <main className="app-shell">
       <header className="masthead">
         <div>
-          <p className="eyebrow">Digitalt støbeværktøj · v0.2</p>
+          <p className="eyebrow">Digitalt støbeværktøj · v0.2.1</p>
           <h1>Muchwater</h1>
           <p className="subtitle">Gipsberegner til atelieret</p>
         </div>
-        <div className="calibration-chip" title="Empirisk kalibrering">
-          <span>Kalibreret</span>
-          <strong>{CALIBRATION.plasterGrams} g / {CALIBRATION.waterGrams} g</strong>
-          <small>Ø{CALIBRATION.diameterMm} × {CALIBRATION.heightMm} mm</small>
+        <div className="calibration-chip" title="Aktiv empirisk kalibrering">
+          <span>{selectedInvestment.brand} · {selectedInvestment.name}</span>
+          <strong>{selectedInvestment.calibration.plasterGrams} g / {selectedInvestment.calibration.waterGrams} g</strong>
+          <small>Ø{selectedInvestment.calibration.diameterMm} × {selectedInvestment.calibration.heightMm} mm atelierreference</small>
         </div>
       </header>
 
@@ -156,17 +171,38 @@ function App() {
             <div className="step-heading">
               <span className="step-number">02</span>
               <div>
-                <h2>Figurens volumen</h2>
-                <p>Indtast volumen direkte, beregn fra vægt eller analysér en STL-fil.</p>
+                <h2>Materialer</h2>
+                <p>Vælg den investment og resin, du arbejder med.</p>
               </div>
             </div>
 
-            <FigureVolumePanel volumeCm3={figureVolume} onVolumeChange={setFigureVolume} />
+            <MaterialPanel
+              investmentId={selectedInvestment.id}
+              resinId={selectedResin.id}
+              onInvestmentChange={setSelectedInvestmentId}
+              onResinChange={setSelectedResinId}
+            />
           </div>
 
           <div className="step-card">
             <div className="step-heading">
               <span className="step-number">03</span>
+              <div>
+                <h2>Figurens volumen</h2>
+                <p>Indtast faktisk volumen eller beregn den fra figurens vægt og resinens densitet.</p>
+              </div>
+            </div>
+
+            <FigureVolumePanel
+              volumeCm3={figureVolume}
+              resin={selectedResin}
+              onVolumeChange={setFigureVolume}
+            />
+          </div>
+
+          <div className="step-card">
+            <div className="step-heading">
+              <span className="step-number">04</span>
               <div>
                 <h2>Reserve</h2>
                 <p>Ekstra blanding til spild og rester i spanden.</p>
@@ -203,7 +239,7 @@ function App() {
           {result.value ? (
             <>
               <div className="result-primary">
-                <span>Gips</span>
+                <span>Gips / investment</span>
                 <strong>{roundGrams(result.value.plasterGrams).toLocaleString('da-DK')}</strong>
                 <em>gram</em>
               </div>
@@ -214,6 +250,8 @@ function App() {
               </div>
 
               <dl className="result-details">
+                <div><dt>Investment</dt><dd>{selectedInvestment.name}</dd></div>
+                <div><dt>Resin</dt><dd>{selectedResin.name}</dd></div>
                 <div><dt>Fyldevolumen</dt><dd>{formatLitres(result.value.fillVolumeCm3)} L</dd></div>
                 <div><dt>Figuren optager</dt><dd>{Math.round((result.value.figureVolumeCm3 / result.value.cuvetteVolumeCm3) * 100)} %</dd></div>
                 <div><dt>Reserve</dt><dd>{result.value.reservePercent.toLocaleString('da-DK')} %</dd></div>
@@ -221,9 +259,9 @@ function App() {
               </dl>
 
               <div className="ratio-card">
-                <span>Fast blandingsforhold</span>
-                <strong>{CALIBRATION.plasterGrams} : {CALIBRATION.waterGrams}</strong>
-                <small>Skaleret fra {formatLitres(CALIBRATION_VOLUME_CM3)} L referencevolumen</small>
+                <span>Aktiv atelierkalibrering</span>
+                <strong>{selectedInvestment.calibration.plasterGrams} : {selectedInvestment.calibration.waterGrams}</strong>
+                <small>Skaleret fra {formatLitres(calibrationVolume)} L referencevolumen</small>
               </div>
             </>
           ) : (
@@ -236,8 +274,8 @@ function App() {
       </section>
 
       <footer>
-        <span>Muchwater v0.2 · atelier calculator</span>
-        <span>Beregningen er empirisk kalibreret – ikke baseret på teoretisk gipsdensitet.</span>
+        <span>Muchwater v0.2.1 · atelier calculator</span>
+        <span>Empirisk fyldekalibrering · verificerede produktdata holdes separat.</span>
       </footer>
     </main>
   );
