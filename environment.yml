@@ -1,0 +1,5 @@
+name: muchwater
+channels:
+  - conda-forge
+dependencies:
+  - nodejs >=22.12,<23

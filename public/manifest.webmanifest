@@ -1,0 +1,18 @@
+{
+  "name": "Muchwater · Støbeberegner",
+  "short_name": "Muchwater",
+  "description": "Digitalt støbeværktøj til beregning af gips og vand.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#101211",
+  "theme_color": "#151716",
+  "lang": "da",
+  "icons": [
+    {
+      "src": "/muchwater.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
