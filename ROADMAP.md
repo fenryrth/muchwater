@@ -1,91 +1,81 @@
 # Muchwater Roadmap
 
-## V1 · Beregner
+## V1 · Grundværktøj
 
 Status: **implementeret og manuelt prøvet på Pop!_OS 24.**
 
-- [x] Empirisk reference: 1730 g gips/investment + 750 g vand i Ø100 × 150 mm
-- [x] Kalibreret referencecuvette som indbygget preset
-- [x] Egne cylindriske cuvetter med faktiske indvendige mål
+- [x] Cylindrisk cuvettegeometri
+- [x] Egne cuvetter med indvendige mål
 - [x] Figurvolumen i cm³/ml
-- [x] Reserveprocent
-- [x] Gips-, vand- og totalberegning
-- [x] Lokal lagring af egne cuvetter
+- [x] Lokal lagring af cuvetter
 - [x] Responsivt værkstedsinterface
 - [x] PWA/offline-grundlag
-- [x] Unit tests af beregningsmotoren
-- [x] Første bruger-/workshopstest på Pop!_OS 24
-- [x] Vite TypeScript client declarations
+- [x] Unit tests
 
-V1-regel: der må ikke tilføjes antagede cuvettestørrelser som standarddata. Kun verificerede værkstedsmål eller den empiriske reference må være presets.
+## V2 · Materialer og producentdata
 
-## V2 · Materialer og modelvolumen
+Status: **v0.2.2 implementeret; afventer lokal test på Pop!_OS.**
 
-Status: **materiale-fokuseret v0.2.1 implementeret; afventer lokal test på Pop!_OS.**
+### Retningsændringer
 
-### Retningsændring
+- [x] STL-funktionen fjernet
+- [x] Empirisk 1730/750-kalibrering fjernet helt
+- [x] Materialedata skal udelukkende komme fra officielle producentkilder
+- [x] Geometrisk fyldevolumen og materialemasse er separate beregninger
 
-STL-funktionen fra det første V2-snit er fjernet efter brugerens beslutning. Den forventes sjældent brugt og passer dårligere til det daglige atelier-workflow end produkt- og materialevalg.
+### Implementeret i v0.2.2
 
-### Implementeret i v0.2.1
+- [x] Gold Star Powders Metacast som investment-preset
+- [x] Metacast Conventional Mixing: 40:100 vand:pulver
+- [x] Metacast Vacuum Mixing: 38–40:100 vand:pulver
+- [x] Valg mellem konventionel og vakuumblanding
+- [x] Vakuum-ratio begrænset til producentens 38–40 interval
+- [x] Pulvermængde → vand ud fra producentforhold
+- [x] Reserve bevarer samme producentforhold
+- [x] Siraya Tech Cast True Blue / Royal Blue
+- [x] Siraya Tech Cast Purple
+- [x] Siraya Tech Cast TDS solid density 1.2 g/cm³
+- [x] Vægt → figurvolumen med officiel TDS-densitet
+- [x] Densiteten er ikke længere brugerredigerbar
+- [x] Officielle kilde-URL'er gemt i materialedata
+- [x] Unit tests for producentdata og ratioformler
+- [x] PWA-cacheversion opdateret
 
-- [x] STL-upload, STL-parser og STL-tests fjernet
-- [x] Nyt trin: Materialer
-- [x] Separat valg af investment/gips og resin
-- [x] Gold Star Powders Metacast som første verificerede investment-preset
-- [x] Metacast producentdata: 40:100 conventional, 38–40:100 vacuum
-- [x] Atelierets 1730/750-reference holdes separat fra fabrikantens ratio
-- [x] Beregningsmotor understøtter materialespecifik empirisk kalibrering
-- [x] Siraya Tech Cast True Blue / Royal Blue resinpreset
-- [x] Siraya Tech Cast Purple resinpreset
-- [x] Siraya Tech TDS solid density 1.2 g/cm³ som redigerbar startværdi
-- [x] Vægt → volumen via `masse / densitet`
-- [x] Produktkilder gemt sammen med preset-data
-- [x] Unit tests for kritiske materialedata
-- [x] PWA-cacheversion opdateret efter V2-ændringen
+### Beregningsgrænse
 
-### Vigtig Metacast-kalibrering
+Gold Stars officielle Metacast-materiale angiver vand/pulver-forhold, men projektet har ingen officiel producentværdi for omregning fra cuvette-/slurryvolumen til gram pulver.
 
-Gold Star angiver officielt vand:pulver:
+Muchwater gør derfor følgende:
 
-- konventionel blanding: `40:100`
-- vakuumblanding: `38–40:100`
+- cuvette + figur → geometrisk fyldevolumen
+- pulvermængde + producentratio → vand og total blanding
 
-Atelierets nuværende empiriske reference `750/1730` svarer til ca. `43,35:100`.
-
-Muchwater bruger fortsat **1730/750 til fyldevolumen**, fordi den fysisk kendte reference ikke må erstattes med fabrikantens forhold uden en ny målt referencefyldning.
+Der må ikke tilføjes en skjult eller empirisk volume-to-mass-faktor.
 
 ### Næste V2-snit
 
 - [ ] Lokal Pop!_OS-validering: `npm test`, `npm run typecheck`, `npm run build`
-- [ ] Browsertest af materialevalg og Siraya vægtberegning
-- [ ] Gem egne resinprodukter med navn + densitet
-- [ ] Gem egne investmentprodukter med empirisk referencekalibrering
-- [ ] Kalibreringsguide til nye investments
-- [ ] Gem fabrikantens ratio separat fra atelierets kalibrering
-- [ ] Gemte figurer/modeller med vægt og faktisk volumen
-- [ ] Persistér senest valgte materialer mellem sessioner
-- [ ] Overvej proces-/burnout-noter pr. materialekombination
-
-Vigtig investment-regel: en ny gips/investment må ikke bruges til automatisk gram-beregning alene ud fra fabrikantens vand/pulver-ratio. Den skal have en verificeret empirisk fyldekalibrering.
-
-Vigtig resin-regel: produktdensitet skal komme fra officiel TDS eller brugerens egen kalibrering og skal kunne korrigeres.
+- [ ] Browsertest af konventionel 40:100 og vakuum 38–40:100
+- [ ] Persistér senest valgte materialer og blandemetode
+- [ ] Tilføj flere investments fra officielle producentdata
+- [ ] Tilføj flere castable resins fra officielle TDS-data
+- [ ] Gemte figurer/modeller med vægt og volumen
+- [ ] Producentens mixing/burnout-proces som valgfrit referencepanel
+- [ ] Kobl kun fyldevolumen til gram, hvis producenten offentliggør en officiel yield/density/metode til dette
 
 ## V3 · Atelier og batch
 
 - [ ] Batchhistorik
 - [ ] Projektnavn/figur/cuvette/materialer på hver blanding
-- [ ] Noter: for lidt / perfekt / for meget
-- [ ] Registrer restmængde efter støbning
-- [ ] Kalibreringsanalyse baseret på egne batches
-- [ ] Flere gips-/investment-opskrifter
+- [ ] Noter om faktisk forbrug og resultat
+- [ ] Gem seneste arbejdsgange
 - [ ] Eksport/print af batchrapport
 - [ ] Backup/import af lokale data
 - [ ] Mulig synkronisering mellem enheder, hvis workflowet kræver det
 
 ## Ikke besluttet endnu
 
-- Backend/synkronisering mellem enheder. Appen er bevidst frontend-only og local-first.
-- Login/cloud storage. Skal kun tilføjes, hvis et reelt workflow kræver det.
-- Andre cuvettegeometrier end cylinder.
-- Automatisk burnout-planlægning. Kan senere være relevant pr. kombination af investment/resin, men er ikke en del af den nuværende beregningskerne.
+- Backend/synkronisering mellem enheder
+- Login/cloud storage
+- Andre cuvettegeometrier end cylinder
+- Burnout-planlægning som aktiv workflow-funktion
