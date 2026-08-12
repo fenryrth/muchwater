@@ -2,13 +2,18 @@ import {
   INVESTMENT_MATERIALS,
   RESIN_MATERIALS,
 } from '../data/materials';
+import type { MixingMethod } from '../domain/types';
 import './MaterialPanel.css';
 
 interface MaterialPanelProps {
   investmentId: string;
   resinId: string;
+  mixingMethod: MixingMethod;
+  vacuumWaterPer100Powder: number;
   onInvestmentChange: (id: string) => void;
   onResinChange: (id: string) => void;
+  onMixingMethodChange: (method: MixingMethod) => void;
+  onVacuumWaterRatioChange: (ratio: number) => void;
 }
 
 function formatNumber(value: number, maximumFractionDigits = 2): string {
@@ -21,13 +26,26 @@ function formatNumber(value: number, maximumFractionDigits = 2): string {
 export function MaterialPanel({
   investmentId,
   resinId,
+  mixingMethod,
+  vacuumWaterPer100Powder,
   onInvestmentChange,
   onResinChange,
+  onMixingMethodChange,
+  onVacuumWaterRatioChange,
 }: MaterialPanelProps) {
   const investment = INVESTMENT_MATERIALS.find((item) => item.id === investmentId) ?? INVESTMENT_MATERIALS[0];
   const resin = RESIN_MATERIALS.find((item) => item.id === resinId) ?? RESIN_MATERIALS[0];
-  const atelierWaterRatio = investment.calibration.waterGrams / investment.calibration.plasterGrams * 100;
   const ratio = investment.manufacturerWaterRatio;
+  const activeRatio = mixingMethod === 'conventional'
+    ? ratio.conventionalWaterPer100Powder
+    : vacuumWaterPer100Powder;
+
+  function updateVacuumRatio(value: string) {
+    const parsed = Number(value.replace(',', '.'));
+    if (!Number.isFinite(parsed)) return;
+    const bounded = Math.min(ratio.vacuumWaterMaxPer100Powder, Math.max(ratio.vacuumWaterMinPer100Powder, parsed));
+    onVacuumWaterRatioChange(bounded);
+  }
 
   return (
     <div className="material-panel">
@@ -49,29 +67,46 @@ export function MaterialPanel({
             <strong>{investment.name}</strong>
             <dl className="product-data">
               <div>
-                <dt>Atelierkalibrering</dt>
-                <dd>{investment.calibration.plasterGrams} g / {investment.calibration.waterGrams} g</dd>
+                <dt>Konventionel blanding</dt>
+                <dd>{ratio.conventionalWaterPer100Powder} : 100</dd>
               </div>
               <div>
-                <dt>Atelier vand : pulver</dt>
-                <dd>{formatNumber(atelierWaterRatio, 2)} : 100</dd>
+                <dt>Vakuumblanding</dt>
+                <dd>{ratio.vacuumWaterMinPer100Powder}–{ratio.vacuumWaterMaxPer100Powder} : 100</dd>
               </div>
-              {ratio?.conventionalWaterPer100Powder !== undefined && (
-                <div>
-                  <dt>Producent · konventionel</dt>
-                  <dd>{ratio.conventionalWaterPer100Powder} : 100</dd>
-                </div>
-              )}
-              {ratio?.vacuumWaterMinPer100Powder !== undefined && ratio.vacuumWaterMaxPer100Powder !== undefined && (
-                <div>
-                  <dt>Producent · vakuum</dt>
-                  <dd>{ratio.vacuumWaterMinPer100Powder}–{ratio.vacuumWaterMaxPer100Powder} : 100</dd>
-                </div>
-              )}
             </dl>
-            <p className="material-note">
-              Muchwater bruger din empiriske atelierkalibrering til selve fyldeberegningen. Producentens forhold er referenceinformation og ændrer ikke automatisk din gennemprøvede opskrift.
-            </p>
+
+            <div className="mixing-controls">
+              <label className="field-label" htmlFor="mixing-method">Blandemetode</label>
+              <select
+                id="mixing-method"
+                value={mixingMethod}
+                onChange={(event) => onMixingMethodChange(event.target.value as MixingMethod)}
+              >
+                <option value="conventional">Konventionel · 40:100</option>
+                <option value="vacuum">Vakuum · 38–40:100</option>
+              </select>
+
+              {mixingMethod === 'vacuum' && (
+                <label className="ratio-input-label">
+                  Vand pr. 100 g pulver · g
+                  <input
+                    type="number"
+                    min={ratio.vacuumWaterMinPer100Powder}
+                    max={ratio.vacuumWaterMaxPer100Powder}
+                    step="0.5"
+                    value={vacuumWaterPer100Powder}
+                    onChange={(event) => updateVacuumRatio(event.target.value)}
+                  />
+                </label>
+              )}
+            </div>
+
+            <div className="active-ratio">
+              <span>Aktivt producentforhold</span>
+              <strong>{formatNumber(activeRatio, 1)} : 100</strong>
+            </div>
+
             <a className="source-link" href={investment.sourceUrl} target="_blank" rel="noreferrer">
               Producentdata ↗
             </a>
@@ -99,21 +134,11 @@ export function MaterialPanel({
                 <dd>{formatNumber(resin.solidDensityGPerCm3, 2)} g/cm³</dd>
               </div>
             </dl>
-            <p className="material-note">
-              Densiteten bruges som udgangspunkt, når figurvolumen beregnes fra vægten af en hærdet resinmodel. Du kan stadig korrigere densiteten i vægtberegningen.
-            </p>
             <a className="source-link" href={resin.sourceUrl} target="_blank" rel="noreferrer">
               Producentdata ↗
             </a>
           </div>
         </div>
-      </div>
-
-      <div className="calibration-alert">
-        <strong>Kalibrering før datablad</strong>
-        <span>
-          Metacast-databladets vand/pulver-forhold er lavere end atelierets nuværende 750/1730-reference. Muchwater ændrer derfor ikke blandingen ud fra databladet, før en ny fysisk fyldetest er målt.
-        </span>
       </div>
     </div>
   );
