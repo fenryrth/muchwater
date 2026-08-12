@@ -1,4 +1,4 @@
-const CACHE = 'muchwater-v2-materials';
+const CACHE = 'muchwater-v3-manufacturer';
 const CORE_ASSETS = ['/manifest.webmanifest', '/muchwater.svg'];
 
 async function cacheBuiltApp() {
