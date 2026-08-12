@@ -1,11 +1,9 @@
-import { CALIBRATION } from '../domain/calculations';
 import type { InvestmentMaterial, ResinMaterial } from '../domain/types';
 
 export const GOLD_STAR_METACAST: InvestmentMaterial = {
   id: 'gold-star-metacast',
   brand: 'Gold Star Powders',
   name: 'Metacast',
-  calibration: { ...CALIBRATION },
   manufacturerWaterRatio: {
     conventionalWaterPer100Powder: 40,
     vacuumWaterMinPer100Powder: 38,
@@ -13,7 +11,7 @@ export const GOLD_STAR_METACAST: InvestmentMaterial = {
   },
   sourceLabel: 'Gold Star Powders · Metacast technical specification',
   sourceUrl: 'https://www.goldstarpowders.com/products/metacast-premium-investment-powder/',
-  note: 'Muchwater bruger atelierets empiriske 1730 g / 750 g kalibrering til fyldevolumen. Producentens vand/pulver-forhold vises separat som produktdata.',
+  note: 'Producentforhold: 40:100 ved konventionel blanding og 38–40:100 ved vakuumblanding.',
 };
 
 export const SIRAYA_CAST_TRUE_BLUE: ResinMaterial = {
@@ -23,7 +21,7 @@ export const SIRAYA_CAST_TRUE_BLUE: ResinMaterial = {
   solidDensityGPerCm3: 1.2,
   sourceLabel: 'Siraya Tech · Cast Castable Resin TDS',
   sourceUrl: 'https://siraya.tech/pages/cast-castable-resin-tds',
-  note: 'TDS-værdi for solid/hærdet resin. Bruges som udgangspunkt ved vægt → volumen og kan redigeres i beregningen.',
+  note: 'TDS solid density: 1.2 g/cm³.',
 };
 
 export const SIRAYA_CAST_PURPLE: ResinMaterial = {
@@ -33,7 +31,7 @@ export const SIRAYA_CAST_PURPLE: ResinMaterial = {
   solidDensityGPerCm3: 1.2,
   sourceLabel: 'Siraya Tech · Cast Castable Resin TDS',
   sourceUrl: 'https://siraya.tech/pages/cast-castable-resin-tds',
-  note: 'TDS-værdi for solid/hærdet resin. Bruges som udgangspunkt ved vægt → volumen og kan redigeres i beregningen.',
+  note: 'TDS solid density: 1.2 g/cm³.',
 };
 
 export const INVESTMENT_MATERIALS: InvestmentMaterial[] = [GOLD_STAR_METACAST];
