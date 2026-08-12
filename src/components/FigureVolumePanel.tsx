@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { volumeFromMassAndDensity } from '../domain/figure';
 import type { ResinMaterial } from '../domain/types';
 import './FigureVolumePanel.css';
@@ -31,16 +31,11 @@ function formatVolume(value: number): string {
 export function FigureVolumePanel({ volumeCm3, resin, onVolumeChange }: FigureVolumePanelProps) {
   const [method, setMethod] = useState<VolumeMethod>('manual');
   const [massGrams, setMassGrams] = useState(0);
-  const [density, setDensity] = useState(resin.solidDensityGPerCm3);
-
-  useEffect(() => {
-    setDensity(resin.solidDensityGPerCm3);
-  }, [resin.id, resin.solidDensityGPerCm3]);
 
   const weightCandidate = useMemo(() => {
     try {
       return {
-        value: volumeFromMassAndDensity(massGrams, density),
+        value: volumeFromMassAndDensity(massGrams, resin.solidDensityGPerCm3),
         error: '',
       };
     } catch (error) {
@@ -49,7 +44,7 @@ export function FigureVolumePanel({ volumeCm3, resin, onVolumeChange }: FigureVo
         error: error instanceof Error ? error.message : 'Volumen kunne ikke beregnes.',
       };
     }
-  }, [massGrams, density]);
+  }, [massGrams, resin.solidDensityGPerCm3]);
 
   return (
     <div className="figure-volume-panel">
@@ -82,9 +77,6 @@ export function FigureVolumePanel({ volumeCm3, resin, onVolumeChange }: FigureVo
             />
             <span>cm³</span>
           </div>
-          <p className="field-note">
-            Brug faktisk volumen. Til en fysisk figur kan vandfortrængning være en præcis metode, når materialet tåler det.
-          </p>
         </div>
       )}
 
@@ -93,42 +85,26 @@ export function FigureVolumePanel({ volumeCm3, resin, onVolumeChange }: FigureVo
           <div className="selected-resin">
             <span>Valgt resin</span>
             <strong>{resin.brand} · {resin.name}</strong>
-            <small>Producentens TDS: solid densitet {resin.solidDensityGPerCm3.toLocaleString('da-DK')} g/cm³</small>
+            <small>Solid densitet ifølge TDS: {resin.solidDensityGPerCm3.toLocaleString('da-DK')} g/cm³</small>
           </div>
 
-          <div className="two-column">
-            <label>
-              Figurens vægt · g
-              <input
-                type="number"
-                min="0"
-                step="0.1"
-                value={massGrams}
-                onChange={(event) => setMassGrams(numberFromInput(event.target.value))}
-              />
-            </label>
-            <label>
-              Densitet brugt · g/cm³
-              <input
-                type="number"
-                min="0"
-                step="0.001"
-                value={density}
-                onChange={(event) => setDensity(numberFromInput(event.target.value))}
-              />
-            </label>
-          </div>
+          <label>
+            Figurens vægt · g
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={massGrams}
+              onChange={(event) => setMassGrams(numberFromInput(event.target.value))}
+            />
+          </label>
 
-          <p className="field-note warning-note">
-            Preset-værdien kommer fra Siraya Techs TDS for hærdet/solid Cast-resin. Feltet er redigerbart, hvis du senere måler en mere præcis værdi for din egen print- og hærdningsproces.
-          </p>
-
-          {weightCandidate.value !== null && density > 0 ? (
+          {weightCandidate.value !== null ? (
             <div className="candidate-card">
               <div>
                 <span>Beregnet figurvolumen</span>
                 <strong>{formatVolume(weightCandidate.value)} cm³</strong>
-                <small>{resin.name}</small>
+                <small>{resin.name} · {resin.solidDensityGPerCm3.toLocaleString('da-DK')} g/cm³</small>
               </div>
               <button
                 className="primary-button compact"
@@ -139,13 +115,13 @@ export function FigureVolumePanel({ volumeCm3, resin, onVolumeChange }: FigureVo
               </button>
             </div>
           ) : (
-            density > 0 && weightCandidate.error && <p className="inline-error">{weightCandidate.error}</p>
+            weightCandidate.error && <p className="inline-error">{weightCandidate.error}</p>
           )}
         </div>
       )}
 
       <div className="active-volume">
-        <span>Aktivt figurvolumen i blandingen</span>
+        <span>Aktivt figurvolumen</span>
         <strong>{formatVolume(volumeCm3)} cm³</strong>
       </div>
     </div>
