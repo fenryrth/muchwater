@@ -6,25 +6,19 @@ export interface Cuvette {
   isCustom?: boolean;
 }
 
-export interface MixCalibration {
-  diameterMm: number;
-  heightMm: number;
-  plasterGrams: number;
-  waterGrams: number;
-}
+export type MixingMethod = 'conventional' | 'vacuum';
 
 export interface ManufacturerWaterRatio {
-  conventionalWaterPer100Powder?: number;
-  vacuumWaterMinPer100Powder?: number;
-  vacuumWaterMaxPer100Powder?: number;
+  conventionalWaterPer100Powder: number;
+  vacuumWaterMinPer100Powder: number;
+  vacuumWaterMaxPer100Powder: number;
 }
 
 export interface InvestmentMaterial {
   id: string;
   brand: string;
   name: string;
-  calibration: MixCalibration;
-  manufacturerWaterRatio?: ManufacturerWaterRatio;
+  manufacturerWaterRatio: ManufacturerWaterRatio;
   sourceLabel: string;
   sourceUrl: string;
   note?: string;
@@ -40,20 +34,24 @@ export interface ResinMaterial {
   note?: string;
 }
 
-export interface MixInput {
-  cuvette: Cuvette;
-  figureVolumeCm3: number;
-  reservePercent: number;
-  calibration?: MixCalibration;
-}
-
-export interface MixResult {
+export interface FillVolumeResult {
   cuvetteVolumeCm3: number;
   figureVolumeCm3: number;
   fillVolumeCm3: number;
+  fillFraction: number;
+}
+
+export interface MixInput {
+  powderGrams: number;
+  waterPer100Powder: number;
   reservePercent: number;
-  plasterGrams: number;
+}
+
+export interface MixResult {
+  basePowderGrams: number;
+  powderGrams: number;
   waterGrams: number;
   totalMixGrams: number;
-  fillFraction: number;
+  waterPer100Powder: number;
+  reservePercent: number;
 }
