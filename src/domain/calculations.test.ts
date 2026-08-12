@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  CALIBRATION_VOLUME_CM3,
+  calculateFillVolume,
   calculateMix,
   cylinderVolumeCm3,
 } from './calculations';
@@ -13,71 +13,62 @@ const referenceCuvette: Cuvette = {
   heightMm: 150,
 };
 
-describe('cylinderVolumeCm3', () => {
-  it('calculates the empirical reference cuvette volume', () => {
+describe('geometry', () => {
+  it('calculates a Ø100 × 150 mm cylinder volume', () => {
     expect(cylinderVolumeCm3(100, 150)).toBeCloseTo(1178.097245, 6);
-    expect(CALIBRATION_VOLUME_CM3).toBeCloseTo(1178.097245, 6);
-  });
-});
-
-describe('calculateMix', () => {
-  it('returns exactly the calibration mix for an empty reference cuvette', () => {
-    const result = calculateMix({
-      cuvette: referenceCuvette,
-      figureVolumeCm3: 0,
-      reservePercent: 0,
-    });
-
-    expect(result.plasterGrams).toBeCloseTo(1730, 8);
-    expect(result.waterGrams).toBeCloseTo(750, 8);
   });
 
-  it('scales linearly with the available fill volume', () => {
-    const result = calculateMix({
-      cuvette: referenceCuvette,
-      figureVolumeCm3: CALIBRATION_VOLUME_CM3 / 2,
-      reservePercent: 0,
-    });
-
-    expect(result.plasterGrams).toBeCloseTo(865, 8);
-    expect(result.waterGrams).toBeCloseTo(375, 8);
-  });
-
-  it('adds reserve to both plaster and water without changing the ratio', () => {
-    const result = calculateMix({
-      cuvette: referenceCuvette,
-      figureVolumeCm3: 0,
-      reservePercent: 5,
-    });
-
-    expect(result.plasterGrams).toBeCloseTo(1816.5, 8);
-    expect(result.waterGrams).toBeCloseTo(787.5, 8);
-  });
-
-  it('can use a material-specific empirical calibration', () => {
-    const result = calculateMix({
-      cuvette: referenceCuvette,
-      figureVolumeCm3: 0,
-      reservePercent: 0,
-      calibration: {
-        diameterMm: 100,
-        heightMm: 150,
-        plasterGrams: 1000,
-        waterGrams: 400,
-      },
-    });
-
-    expect(result.plasterGrams).toBeCloseTo(1000, 8);
-    expect(result.waterGrams).toBeCloseTo(400, 8);
+  it('subtracts figure volume from the cuvette volume', () => {
+    const result = calculateFillVolume(referenceCuvette, 200);
+    expect(result.fillVolumeCm3).toBeCloseTo(978.097245, 6);
   });
 
   it('rejects a figure that fills or exceeds the cuvette', () => {
-    expect(() =>
-      calculateMix({
-        cuvette: referenceCuvette,
-        figureVolumeCm3: CALIBRATION_VOLUME_CM3,
-        reservePercent: 0,
-      }),
-    ).toThrow(/mindre end cuvettens volumen/i);
+    const cuvetteVolume = cylinderVolumeCm3(100, 150);
+    expect(() => calculateFillVolume(referenceCuvette, cuvetteVolume)).toThrow(/mindre end cuvettens volumen/i);
+  });
+});
+
+describe('manufacturer water/powder mix', () => {
+  it('calculates Metacast conventional 40:100', () => {
+    const result = calculateMix({
+      powderGrams: 1000,
+      waterPer100Powder: 40,
+      reservePercent: 0,
+    });
+
+    expect(result.powderGrams).toBe(1000);
+    expect(result.waterGrams).toBe(400);
+    expect(result.totalMixGrams).toBe(1400);
+  });
+
+  it('calculates Metacast vacuum 38:100', () => {
+    const result = calculateMix({
+      powderGrams: 1000,
+      waterPer100Powder: 38,
+      reservePercent: 0,
+    });
+
+    expect(result.waterGrams).toBe(380);
+  });
+
+  it('adds reserve while preserving the manufacturer ratio', () => {
+    const result = calculateMix({
+      powderGrams: 1000,
+      waterPer100Powder: 40,
+      reservePercent: 5,
+    });
+
+    expect(result.powderGrams).toBe(1050);
+    expect(result.waterGrams).toBe(420);
+    expect(result.totalMixGrams).toBe(1470);
+  });
+
+  it('rejects an invalid water/powder ratio', () => {
+    expect(() => calculateMix({
+      powderGrams: 1000,
+      waterPer100Powder: 0,
+      reservePercent: 0,
+    })).toThrow(/vand\/pulver-forholdet/i);
   });
 });
