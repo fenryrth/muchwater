@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 import { FigureVolumePanel } from './components/FigureVolumePanel';
 import { MaterialPanel } from './components/MaterialPanel';
 import {
+  calculateFillVolume,
   calculateMix,
   cuvetteVolumeCm3,
-  cylinderVolumeCm3,
   formatLitres,
   roundGrams,
 } from './domain/calculations';
-import type { Cuvette } from './domain/types';
+import type { Cuvette, MixingMethod } from './domain/types';
 import { DEFAULT_CUVETTES } from './data/cuvettes';
 import {
   DEFAULT_INVESTMENT_ID,
@@ -31,8 +31,11 @@ function App() {
   const [selectedId, setSelectedId] = useState(DEFAULT_CUVETTES[0].id);
   const [selectedInvestmentId, setSelectedInvestmentId] = useState(DEFAULT_INVESTMENT_ID);
   const [selectedResinId, setSelectedResinId] = useState(DEFAULT_RESIN_ID);
+  const [mixingMethod, setMixingMethod] = useState<MixingMethod>('conventional');
+  const [vacuumWaterRatio, setVacuumWaterRatio] = useState(40);
   const [figureVolume, setFigureVolume] = useState(0);
-  const [reservePercent, setReservePercent] = useState(5);
+  const [powderGrams, setPowderGrams] = useState(1000);
+  const [reservePercent, setReservePercent] = useState(0);
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customDiameter, setCustomDiameter] = useState(100);
@@ -43,29 +46,41 @@ function App() {
   const selectedInvestment = INVESTMENT_MATERIALS.find((item) => item.id === selectedInvestmentId) ?? INVESTMENT_MATERIALS[0];
   const selectedResin = RESIN_MATERIALS.find((item) => item.id === selectedResinId) ?? RESIN_MATERIALS[0];
   const selectedVolume = cuvetteVolumeCm3(selectedCuvette);
-  const calibrationVolume = cylinderVolumeCm3(
-    selectedInvestment.calibration.diameterMm,
-    selectedInvestment.calibration.heightMm,
-  );
+  const activeWaterRatio = mixingMethod === 'conventional'
+    ? selectedInvestment.manufacturerWaterRatio.conventionalWaterPer100Powder
+    : vacuumWaterRatio;
 
-  const result = useMemo(() => {
+  const fillResult = useMemo(() => {
+    try {
+      return {
+        value: calculateFillVolume(selectedCuvette, figureVolume),
+        error: '',
+      };
+    } catch (error) {
+      return {
+        value: null,
+        error: error instanceof Error ? error.message : 'Fyldevolumen kunne ikke beregnes.',
+      };
+    }
+  }, [selectedCuvette, figureVolume]);
+
+  const mixResult = useMemo(() => {
     try {
       return {
         value: calculateMix({
-          cuvette: selectedCuvette,
-          figureVolumeCm3: figureVolume,
+          powderGrams,
+          waterPer100Powder: activeWaterRatio,
           reservePercent,
-          calibration: selectedInvestment.calibration,
         }),
         error: '',
       };
     } catch (error) {
       return {
         value: null,
-        error: error instanceof Error ? error.message : 'Beregningen kunne ikke udføres.',
+        error: error instanceof Error ? error.message : 'Blandingen kunne ikke beregnes.',
       };
     }
-  }, [selectedCuvette, selectedInvestment, figureVolume, reservePercent]);
+  }, [powderGrams, activeWaterRatio, reservePercent]);
 
   function addCustomCuvette() {
     if (customDiameter <= 0 || customHeight <= 0) return;
@@ -100,14 +115,14 @@ function App() {
     <main className="app-shell">
       <header className="masthead">
         <div>
-          <p className="eyebrow">Digitalt støbeværktøj · v0.2.1</p>
+          <p className="eyebrow">Digitalt støbeværktøj · v0.2.2</p>
           <h1>Muchwater</h1>
-          <p className="subtitle">Gipsberegner til atelieret</p>
+          <p className="subtitle">Investmentberegner til atelieret</p>
         </div>
-        <div className="calibration-chip" title="Aktiv empirisk kalibrering">
+        <div className="calibration-chip" title="Aktivt producentforhold">
           <span>{selectedInvestment.brand} · {selectedInvestment.name}</span>
-          <strong>{selectedInvestment.calibration.plasterGrams} g / {selectedInvestment.calibration.waterGrams} g</strong>
-          <small>Ø{selectedInvestment.calibration.diameterMm} × {selectedInvestment.calibration.heightMm} mm atelierreference</small>
+          <strong>{activeWaterRatio.toLocaleString('da-DK')} : 100</strong>
+          <small>{mixingMethod === 'conventional' ? 'Konventionel blanding' : 'Vakuumblanding'}</small>
         </div>
       </header>
 
@@ -118,7 +133,7 @@ function App() {
               <span className="step-number">01</span>
               <div>
                 <h2>Vælg cuvette</h2>
-                <p>Indvendige mål bruges i beregningen.</p>
+                <p>Indvendige mål bruges til at beregne geometrisk fyldevolumen.</p>
               </div>
             </div>
 
@@ -172,15 +187,19 @@ function App() {
               <span className="step-number">02</span>
               <div>
                 <h2>Materialer</h2>
-                <p>Vælg den investment og resin, du arbejder med.</p>
+                <p>Produktdata og blandingsforhold kommer fra producenternes tekniske oplysninger.</p>
               </div>
             </div>
 
             <MaterialPanel
               investmentId={selectedInvestment.id}
               resinId={selectedResin.id}
+              mixingMethod={mixingMethod}
+              vacuumWaterPer100Powder={vacuumWaterRatio}
               onInvestmentChange={setSelectedInvestmentId}
               onResinChange={setSelectedResinId}
+              onMixingMethodChange={setMixingMethod}
+              onVacuumWaterRatioChange={setVacuumWaterRatio}
             />
           </div>
 
@@ -189,7 +208,7 @@ function App() {
               <span className="step-number">03</span>
               <div>
                 <h2>Figurens volumen</h2>
-                <p>Indtast faktisk volumen eller beregn den fra figurens vægt og resinens densitet.</p>
+                <p>Indtast faktisk volumen eller beregn den fra vægt og resinens TDS-densitet.</p>
               </div>
             </div>
 
@@ -198,17 +217,41 @@ function App() {
               resin={selectedResin}
               onVolumeChange={setFigureVolume}
             />
+
+            {fillResult.value ? (
+              <div className="measure-row">
+                <div><span>Cuvette</span><strong>{formatLitres(fillResult.value.cuvetteVolumeCm3)} L</strong></div>
+                <div><span>Figur</span><strong>{(fillResult.value.figureVolumeCm3 / 1000).toLocaleString('da-DK', { maximumFractionDigits: 3 })} L</strong></div>
+                <div><span>Fyldes med investment</span><strong>{formatLitres(fillResult.value.fillVolumeCm3)} L</strong></div>
+              </div>
+            ) : (
+              <p className="inline-error">{fillResult.error}</p>
+            )}
           </div>
 
           <div className="step-card">
             <div className="step-heading">
               <span className="step-number">04</span>
               <div>
-                <h2>Reserve</h2>
-                <p>Ekstra blanding til spild og rester i spanden.</p>
+                <h2>Pulvermængde</h2>
+                <p>Angiv hvor meget investmentpulver du vil blande. Vandet beregnes fra det valgte producentforhold.</p>
               </div>
             </div>
 
+            <label className="field-label" htmlFor="powder-grams">Investmentpulver · gram</label>
+            <div className="unit-input">
+              <input
+                id="powder-grams"
+                type="number"
+                min="0"
+                step="1"
+                value={powderGrams}
+                onChange={(event) => setPowderGrams(numberFromInput(event.target.value))}
+              />
+              <span>g</span>
+            </div>
+
+            <label className="field-label">Reserve</label>
             <div className="reserve-buttons" aria-label="Reserveprocent">
               {RESERVE_PRESETS.map((preset) => (
                 <button
@@ -221,61 +264,53 @@ function App() {
                 </button>
               ))}
             </div>
-            <label className="field-label" htmlFor="reserve">Brugerdefineret · %</label>
-            <input
-              id="reserve"
-              type="number"
-              min="0"
-              max="50"
-              step="1"
-              value={reservePercent}
-              onChange={(event) => setReservePercent(numberFromInput(event.target.value))}
-            />
           </div>
         </div>
 
         <aside className="result-panel" aria-live="polite">
-          <p className="eyebrow">Blanding</p>
-          {result.value ? (
+          <p className="eyebrow">Producentblanding</p>
+          {mixResult.value ? (
             <>
               <div className="result-primary">
-                <span>Gips / investment</span>
-                <strong>{roundGrams(result.value.plasterGrams).toLocaleString('da-DK')}</strong>
+                <span>Investmentpulver</span>
+                <strong>{roundGrams(mixResult.value.powderGrams).toLocaleString('da-DK')}</strong>
                 <em>gram</em>
               </div>
               <div className="result-primary water">
                 <span>Vand</span>
-                <strong>{roundGrams(result.value.waterGrams).toLocaleString('da-DK')}</strong>
+                <strong>{roundGrams(mixResult.value.waterGrams).toLocaleString('da-DK')}</strong>
                 <em>gram</em>
               </div>
 
               <dl className="result-details">
                 <div><dt>Investment</dt><dd>{selectedInvestment.name}</dd></div>
                 <div><dt>Resin</dt><dd>{selectedResin.name}</dd></div>
-                <div><dt>Fyldevolumen</dt><dd>{formatLitres(result.value.fillVolumeCm3)} L</dd></div>
-                <div><dt>Figuren optager</dt><dd>{Math.round((result.value.figureVolumeCm3 / result.value.cuvetteVolumeCm3) * 100)} %</dd></div>
-                <div><dt>Reserve</dt><dd>{result.value.reservePercent.toLocaleString('da-DK')} %</dd></div>
-                <div><dt>Total blanding</dt><dd>{roundGrams(result.value.totalMixGrams).toLocaleString('da-DK')} g</dd></div>
+                <div><dt>Blandemetode</dt><dd>{mixingMethod === 'conventional' ? 'Konventionel' : 'Vakuum'}</dd></div>
+                <div><dt>Vand : pulver</dt><dd>{mixResult.value.waterPer100Powder.toLocaleString('da-DK')} : 100</dd></div>
+                <div><dt>Grundmængde pulver</dt><dd>{roundGrams(mixResult.value.basePowderGrams).toLocaleString('da-DK')} g</dd></div>
+                <div><dt>Reserve</dt><dd>{mixResult.value.reservePercent.toLocaleString('da-DK')} %</dd></div>
+                <div><dt>Total blanding</dt><dd>{roundGrams(mixResult.value.totalMixGrams).toLocaleString('da-DK')} g</dd></div>
+                {fillResult.value && <div><dt>Geometrisk fyldevolumen</dt><dd>{formatLitres(fillResult.value.fillVolumeCm3)} L</dd></div>}
               </dl>
 
               <div className="ratio-card">
-                <span>Aktiv atelierkalibrering</span>
-                <strong>{selectedInvestment.calibration.plasterGrams} : {selectedInvestment.calibration.waterGrams}</strong>
-                <small>Skaleret fra {formatLitres(calibrationVolume)} L referencevolumen</small>
+                <span>Gold Star Metacast · producentforhold</span>
+                <strong>{mixResult.value.waterPer100Powder.toLocaleString('da-DK')} : 100</strong>
+                <small>{mixingMethod === 'conventional' ? 'Konventionel blanding' : 'Vakuumblanding'}</small>
               </div>
             </>
           ) : (
             <div className="error-card">
               <strong>Kan ikke beregne</strong>
-              <p>{result.error}</p>
+              <p>{mixResult.error}</p>
             </div>
           )}
         </aside>
       </section>
 
       <footer>
-        <span>Muchwater v0.2.1 · atelier calculator</span>
-        <span>Empirisk fyldekalibrering · verificerede produktdata holdes separat.</span>
+        <span>Muchwater v0.2.2 · atelier calculator</span>
+        <span>Materialedata fra producenternes tekniske dokumentation.</span>
       </footer>
     </main>
   );
